@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Vocabulary Learning Assistant</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Libraries for file reading -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.5.1/mammoth.browser.min.js"></script>
+</head>
+<body>
+
+    <div class="container">
+        <h1 class="main-title"><i class="fa-solid fa-brain"></i> English Vocabulary Learning Assistant</h1>
+        <div id="loader" class="hidden">Đang xử lý file...</div>
+        
+        <!-- === INPUT SECTION === -->
+        <div id="input-section">
+            <h2>Bước 1: Nhập danh sách từ mới của bạn</h2>
+            <p>Dán trực tiếp hoặc tải lên file. Định dạng: <code>English Word - Nghĩa Tiếng Việt</code></p>
+            <textarea id="word-input" rows="10" placeholder="Ví dụ:
+apple - quả táo
+book - quyển sách
+honeymoon - tuần trăng mật"></textarea>
+            
+            <div class="file-upload-wrapper">
+                <label for="file-upload" class="custom-file-upload">
+                    <i class="fa-solid fa-file-arrow-up"></i> Tải lên file (.docx, .pdf)
+                </label>
+                <input id="file-upload" type="file" accept=".docx,.pdf"/>
+                <span id="file-name"></span>
+            </div>
+            <button id="create-game-btn" class="main-action-btn"><i class="fa-solid fa-gamepad"></i> Tạo Game</button>
+        </div>
+
+        <!-- === GAME SELECTION SECTION === -->
+        <div id="game-selection" class="hidden">
+            <h2>Bước 2: Chọn một game để bắt đầu!</h2>
+            <div class="game-options">
+                <button id="mc-game-btn" class="game-btn mc-btn"><i class="fa-solid fa-list-check"></i> <span>Trắc nghiệm</span></button>
+                <button id="match-game-btn" class="game-btn match-btn"><i class="fa-solid fa-link"></i> <span>Nối từ</span></button>
+                <button id="write-game-btn" class="game-btn write-btn"><i class="fa-solid fa-keyboard"></i> <span>Luyện viết</span></button>
+                <button id="fill-game-btn" class="game-btn fill-btn"><i class="fa-solid fa-pen-ruler"></i> <span>Điền từ</span></button>
+            </div>
+             <div id="final-stats-container" class="hidden"></div>
+        </div>
+
+        <!-- === GAME PLAYING SECTION === -->
+        <div id="game-container" class="hidden">
+            <h2 id="game-title">Tên Game</h2>
+            <div id="stats-bar" class="stats-bar">
+                <div class="stat-item correct"><span class="stat-label">Đúng</span><span id="stats-correct" class="stat-value">0</span></div>
+                <div class="stat-item incorrect"><span class="stat-label">Sai</span><span id="stats-incorrect" class="stat-value">0</span></div>
+                <div class="stat-item progress"><span class="stat-label">Tiến độ</span><span id="stats-progress" class="stat-value">0/0</span></div>
+                <div class="stat-item accuracy"><span class="stat-label">Tỷ lệ</span><span id="stats-accuracy" class="stat-value">0%</span></div>
+            </div>
+            <div id="game-area"></div>
+            <button id="back-to-menu-btn" class="hidden">Quay lại Menu</button>
+        </div>
+    </div>
+    
+    <!-- Animated Character: The `src` will be set by JavaScript -->
+    <div id="character-container">
+        <img id="character-img" src="" alt="Animated Character">
+    </div>
+
+    <!-- Sound Effects -->
+    <audio id="correct-sound" src="data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjQ1LjEwMAAAAAAAAAAAAAAA//tAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWW6HxoYBAAjSX//////////////////////////////////////////////////AAD/20AgYABAAs2g//+xQCEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2.AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBA-..A..//uIAAAAAAAAAAAAAABR1pl6Rk5TDAAAAABJRU5ErkJggg=="></audio>
+    <audio id="incorrect-sound" src="data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjQ1LjEwMAAAAAAAAAAAAAAA//tAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWW6HxoYBAAjSX//////////////////////////////////////////////////AAD/20Ags2g//+xQCEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2.AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBA-A..A..//uIAAAAAAAAAAAAAABR1pl6Rk5TDAAAAABJRU5ErkJggg=="></audio>
+    
+    <footer>
+        <p>© 2024 Copyright Vũ Xuân Hùng</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

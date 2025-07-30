@@ -1,0 +1,136 @@
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&display=swap');
+
+:root {
+    --primary-color: #0d6efd; 
+    --secondary-color: #50e3c2;
+    --accent-color: #f5a623;
+    --danger-color: #d0021b;
+    --success-color: #198754;
+    --fill-color: #6f42c1;
+    --bg-color: #f0f2f5;
+    --text-color: #333;
+    --card-bg: #ffffff;
+    --shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+body {
+    font-family: 'Be Vietnam Pro', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+    overflow-x: hidden;
+}
+
+.container {
+    width: 100%;
+    max-width: 800px;
+    background: var(--card-bg);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    padding: 30px;
+    text-align: center;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 10;
+}
+
+.main-title { color: var(--primary-color); margin-bottom: 20px; }
+.main-title .fa-brain { margin-right: 10px; }
+h2 { margin-top: 0; margin-bottom: 20px; }
+.highlight-word { color: var(--primary-color); font-size: 1.2em; font-weight: 700; }
+.hidden { display: none !important; }
+#loader { font-size: 1.2em; color: var(--primary-color); padding: 20px; }
+
+/* Input Section */
+#input-section textarea { width: 100%; padding: 15px; border-radius: 8px; border: 2px solid #ddd; font-size: 16px; margin-bottom: 15px; box-sizing: border-box; transition: border-color 0.3s; }
+#input-section textarea:focus { border-color: var(--primary-color); outline: none; }
+#input-section code { background-color: #eef2f5; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
+.file-upload-wrapper { margin: 15px 0 20px 0; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+.custom-file-upload { border: 1px solid var(--primary-color); display: inline-block; padding: 8px 15px; cursor: pointer; background-color: #fff; color: var(--primary-color); border-radius: 8px; font-weight: 500; transition: all 0.2s ease; }
+.custom-file-upload:hover { background-color: var(--primary-color); color: #fff; }
+input[type="file"] { display: none; }
+#file-name { color: #555; font-style: italic; }
+
+/* Buttons */
+button { font-family: 'Be Vietnam Pro', sans-serif; font-size: 18px; padding: 15px 30px; border: none; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; font-weight: 700; }
+.main-action-btn { background: var(--primary-color); color: white; width: 100%; }
+.main-action-btn:hover { background: #0b5ed7; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(13, 110, 253, 0.4); }
+
+/* Game Selection */
+.game-options { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin-top: 30px; }
+.game-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 160px; height: 110px; color: white; font-size: 18px; }
+.game-btn i { font-size: 30px; margin-bottom: 10px; }
+.mc-btn { background: linear-gradient(45deg, #2980B9, #6DD5FA); }
+.match-btn { background: linear-gradient(45deg, #f7971e, #ffd200); }
+.write-btn { background: linear-gradient(45deg, #8E2DE2, #4A00E0); }
+.fill-btn { background: linear-gradient(45deg, var(--fill-color), #243b55); }
+.game-btn:hover { transform: scale(1.05); box-shadow: 0 8px 25px rgba(0,0,0,0.2); }
+
+/* Stats Bar Styles */
+.stats-bar { display: flex; flex-wrap: wrap; justify-content: space-around; background-color: #e9ecef; border-radius: 10px; padding: 10px; margin-bottom: 25px; gap: 10px;}
+.stat-item { text-align: center; flex-grow: 1; }
+.stat-label { font-size: 12px; color: #6c757d; display: block; }
+.stat-value { font-size: 20px; font-weight: 700; }
+.stat-item.correct .stat-value { color: var(--success-color); }
+.stat-item.incorrect .stat-value { color: var(--danger-color); }
+.stat-item.progress .stat-value { color: #495057; }
+.stat-item.accuracy .stat-value { color: var(--primary-color); }
+
+/* Game Area Styles */
+.game-prompt { font-size: 20px; font-weight: 400; margin-bottom: 20px; }
+.mc-options { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+.mc-option { background-color: #fff; border: 2px solid #ddd; padding: 20px; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; font-size: 18px; font-weight: 500; }
+.mc-option:hover { border-color: var(--primary-color); color: var(--primary-color); }
+.mc-option.correct, .match-item.correct { background-color: var(--success-color) !important; border-color: var(--success-color) !important; color: white !important; }
+.mc-option.incorrect { background-color: var(--danger-color); border-color: var(--danger-color); color: white; }
+.match-container { display: flex; justify-content: space-around; gap: 20px; }
+.match-column { display: flex; flex-direction: column; gap: 10px; width: 45%; }
+.match-item { padding: 15px; border: 2px solid #ccc; border-radius: 8px; cursor: pointer; background-color: #fff; user-select: none; transition: background-color 0.2s, border-color 0.2s, transform 0.2s; }
+.match-item.selected { border-color: var(--accent-color); background-color: #fffbe6; transform: scale(1.05); }
+.match-item.disabled { cursor: default; opacity: 0.6; }
+.write-input-container { display: flex; justify-content: center; align-items: center; gap: 10px; }
+#write-input, #fill-input { border-radius: 8px; padding: 10px; font-size: 18px; text-align: center; border: 2px solid #ddd; }
+#write-input:focus, #fill-input:focus { outline: none; border-color: var(--primary-color); }
+.fill-sentence { font-size: 1.5em; margin-bottom: 15px; line-height: 1.6; }
+#fill-input { width: 180px; font-size: 0.9em; background: transparent; }
+.fill-clue { font-size: 1.1em; color: #666; margin-bottom: 20px; }
+#check-write-btn, #check-fill-btn { background-color: var(--success-color); color: white; margin-top: 15px; }
+
+
+/* Results & Stats */
+.results-list, #final-stats-container ul { list-style-type: none; padding: 0; text-align: left; max-width: 500px; margin: 20px auto; border: 1px solid #ddd; border-radius: 8px; padding: 20px; background-color: #fafafa; }
+.results-list li, #final-stats-container li { padding: 10px; border-bottom: 1px solid #eee; }
+.results-list li:last-child { border-bottom: none; }
+.results-list .correct-answer, #final-stats-container .correct-answer { color: var(--success-color); font-weight: bold; }
+.results-list .user-answer, #final-stats-container .user-answer { color: var(--danger-color); text-decoration: line-through; }
+.end-game-message { font-size: 2em; font-weight: bold; color: var(--primary-color); }
+
+#back-to-menu-btn { margin-top: 20px; background-color: var(--accent-color); color: white; }
+
+/* Character Styles */
+#character-container {
+    position: fixed;
+    bottom: -10px;
+    right: 10px;
+    width: clamp(120px, 15vw, 180px); /* Responsive size */
+    height: auto;
+    z-index: 1; 
+    pointer-events: none;
+}
+#character-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+.happy-animation { animation: happy-bounce 0.6s ease; }
+.sad-animation { animation: sad-shake 0.5s ease; }
+@keyframes happy-bounce { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-20px) scale(1.1); } }
+@keyframes sad-shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px) rotate(-8deg); } 75% { transform: translateX(8px) rotate(8deg); } }
+
+footer { width: 100%; text-align: center; padding: 10px 0; font-size: 14px; color: #888; position: relative; z-index: 10; }

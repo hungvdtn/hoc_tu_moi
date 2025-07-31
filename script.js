@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const characterImg = document.getElementById('character-img');
     const correctSound = document.getElementById('correct-sound');
     const incorrectSound = document.getElementById('incorrect-sound');
+    const ttsAudio = document.getElementById('tts-audio'); // For high-quality TTS
     const statsCorrect = document.getElementById('stats-correct');
     const statsIncorrect = document.getElementById('stats-incorrect');
     const statsProgress = document.getElementById('stats-progress');
@@ -27,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let incorrectAnswers = { mc: [], write: [], fill: [], match: [] };
     let completedGames = new Set();
     let isProcessing = false;
+    let audioInitialized = false; // To track if audio is unlocked on mobile
 
     const characterGifs = {
         idle: 'data:image/gif;base64,R0lGODlhZABkAPQAAAAAAP///5aWlmtra21tbZmZmc3NzePj4+vr6/39/f7+/v///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH/C05FVFNDQVBFMi4wAwEAAAAh+QQJKAAPACwAAAAAZABkAAAF/6AnjmRpnmiqrmzrvnAsz3Rt33iu73zv/8CgcEgsGo/IpHLJbDqf0Kh0Sq1ar9isdsvter/gsHhMLpvP6LR6zW673/C4fE6v2+/4vH7P7/v/gIFxgYKDhIWGh4iJiouMjY6PkJGSk5SVlpeYmZqbnJ2en6ChoqOkpaanqKmqq6ytrq+wsbKztLW2t7i5uru8vb6/wMHCw8TFxsfIycrLzM3Oz9DR0tPU1dbX2Nna29zd3t/g4eLj5OXm5+jp6uvs7e7v8PHy8/T19vf4+fr7/P3+/wADChxIsKDBgwgTKlzIsKHDhxAjSpxIsaLFixgzatzIsaPHjyBDihxJsqTJkyhTqlzJsqXLlzBjypxJs6bNmzhz6tzJs6fPn0CDCh1KtKjRo0iTKl3KtKnTp1CjSp1KtarVq1izat3KtavXr2DDih1LtqzZs2jTql3Ltq3bt3Djyp1Lt67du3jz6t3Lt6/fv4ADCx5MuLDhw4gTK17MuLHjx5AjS55MubLly5gza97MubPnz6BDix5NurTp06hTq17NurXr17Bjy55Nu7bt27hz697Nu7fv38CDCx9OvLjx48iTK1/OvLnz59CjS59Ovbr169iza9/Ovbv37+DDix9Pvrz58+jTq1/Pvr379/Djy59Pv779+/jz69/Pv7///wAGKOAADEBQQIMNzoFghBVeaOGFGGao4YYcghjiiCSWaOKJKKao4oostujiizDGKOOMNNYoIgAAIfkECQoADwAsAAAAAGQAZAAABf+gJ45kaZ5oqq5s675wLM93bd94ru987//AoHCIFAqPyKRyyWw6n9CodEqtWq/YrHbL7Xq/4LA4rJbM5/Raj8xu+57wsNlPr9vv+Lx+z+/7/4CBgH+ChYeGf4iJiouMjY6PkJF+k5SVlpeYmZqbnJ12n6ChoqOkpaanqKmqq6ytrq94sbKztLW2t7i5uru8vb58v8HCw8TFxsfIycrLzM3OvL/P0NHS09TV1tfY2drb3N22xt/g4eLj5OXm5+jp6uvs7e5yu/Hy8/T19vf4+fr7/P17/P8AAwocSLCgwYMIEypcyLChw4cQI0qcSLGixYsYM2rcyLGjx48gQ4ocSbKkyZMoU6pcybKly5cwY8qcSbOmzZs4c+rcybOnz59AgwodSrSo0aNIkypdyrSp06dQo0qdSrWq1atYs2rdyrWr169gw4odS7as2bNo06pdy7at27dw48qdS7eu3bt48+rdy7ev37+AAwseTLiw4cOIEytezLix48eQI0ueTLiY5cuYM2vezLmz58+gQ4seTbq06dOoU6tezbq169ewY8ueTbu27du4c+vezbu379/AgwsfTry48ePIkytfzry58+fQo0ufTr269evYs2vfzr279+/gw4sfT768+fPo06tfz769+/fw48ufT7++/fv48+vfz7+///8ABijggAQWaOCBCCao4IIMNujggxBGKOGEFFZo4YUYZqjhhhx26OGHIIYo4ogklmgiAAA7',
@@ -44,7 +46,16 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     // === EVENT LISTENERS & INITIALIZATION ===
-    createGameBtn.addEventListener('click', createGame);
+    createGameBtn.addEventListener('click', () => {
+        if (!audioInitialized) {
+            // Unlock audio context on the first user gesture for mobile browsers
+            correctSound.play().then(() => correctSound.pause()).catch(() => {});
+            incorrectSound.play().then(() => incorrectSound.pause()).catch(() => {});
+            audioInitialized = true;
+        }
+        createGame();
+    });
+
     fileUpload.addEventListener('change', handleFileUpload);
     document.getElementById('mc-game-btn').addEventListener('click', () => startGame('mc'));
     document.getElementById('match-game-btn').addEventListener('click', () => startGame('match'));
@@ -105,8 +116,30 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // === UI & STATE HANDLERS ===
-    const speak = (text) => { if ('speechSynthesis' in window) { const utterance = new SpeechSynthesisUtterance(text); utterance.lang = 'en-US'; window.speechSynthesis.speak(utterance); } };
-    const playSound = (sound) => { sound.currentTime = 0; sound.play(); };
+    
+    // ** NEW ** High-quality, cross-platform Text-to-Speech using Google's API
+    function speak(text) {
+        if (!text || isProcessing) return;
+        try {
+            ttsAudio.pause();
+            ttsAudio.currentTime = 0;
+            const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=en&client=tw-ob`;
+            ttsAudio.src = url;
+            const playPromise = ttsAudio.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.error("Speech playback failed:", error);
+                });
+            }
+        } catch (e) {
+            console.error("Error in speak function:", e);
+        }
+    }
+
+    const playSound = (sound) => { 
+        sound.currentTime = 0; 
+        sound.play().catch(error => console.log("Sound effect failed:", error)); 
+    };
     
     function setCharacterState(state) {
         characterImg.src = characterGifs[state];
@@ -121,7 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateStatsBar() {
         const totalItems = wordList.length;
-        const processedItems = gameTitle.innerText.includes("Nối Từ") ? (correctCount + incorrectCount) : currentQuestionIndex;
+        const processedItems = gameTitle.innerText.includes("Nối Từ") ? (correctCount) : currentQuestionIndex;
         statsCorrect.textContent = correctCount;
         statsIncorrect.textContent = incorrectCount;
         statsProgress.textContent = `${processedItems}/${totalItems}`;
@@ -177,7 +210,18 @@ document.addEventListener('DOMContentLoaded', () => {
             handleIncorrectAnswer({ type: 'mc', question: currentWord, userAnswer: selectedAnswer });
         }
         currentQuestionIndex++;
-        setTimeout(() => { isProcessing = false; startMultipleChoiceGame(); }, 1500);
+
+        // ** NEW ** More robust timeout to prevent game freeze
+        setTimeout(() => {
+            try {
+                startMultipleChoiceGame();
+            } catch (error) {
+                console.error("Error starting next MC question:", error);
+                alert("Đã xảy ra lỗi, không thể tiếp tục game. Vui lòng thử lại.");
+            } finally {
+                isProcessing = false; // CRITICAL: This ensures the game never freezes.
+            }
+        }, 1500);
     }
     
     function startMatchingGame() {
@@ -197,6 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     target.classList.add('selected');
                     selectedWordEl = target;
                 } else if (target.dataset.meaning && selectedWordEl) {
+                    isProcessing = true; // Prevent quick multi-clicks
                     const word = selectedWordEl.dataset.word;
                     const meaning = target.dataset.meaning;
                     const correctWordData = wordList.find(w => w.english === word);
@@ -206,11 +251,17 @@ document.addEventListener('DOMContentLoaded', () => {
                         selectedWordEl.classList.add('correct', 'disabled');
                         target.classList.add('correct', 'disabled');
                         if (correctCount === wordList.length) {
-                            isProcessing = true;
                             setTimeout(() => { isProcessing = false; endGame('match'); }, 800);
+                        } else {
+                            isProcessing = false;
                         }
                     } else {
                         handleIncorrectAnswer({ type: 'match', question: { english: word }, userAnswer: `chose '${meaning}'` });
+                        target.classList.add('incorrect');
+                        setTimeout(() => {
+                           target.classList.remove('incorrect');
+                           isProcessing = false;
+                        }, 800);
                     }
                     selectedWordEl.classList.remove('selected');
                     selectedWordEl = null;
@@ -246,7 +297,14 @@ document.addEventListener('DOMContentLoaded', () => {
             handleIncorrectAnswer({ type: 'write', question: currentWord, userAnswer: userAnswer });
         }
         currentQuestionIndex++;
-        setTimeout(() => { isProcessing = false; startWritingGame(); }, 1200);
+        // ** NEW ** More robust timeout
+        setTimeout(() => {
+            try {
+                startWritingGame();
+            } finally {
+                isProcessing = false;
+            }
+        }, 1200);
     }
 
     function startFillGame() {
@@ -277,7 +335,14 @@ document.addEventListener('DOMContentLoaded', () => {
             handleIncorrectAnswer({ type: 'fill', question: currentWord, userAnswer: userAnswer });
         }
         currentQuestionIndex++;
-        setTimeout(() => { isProcessing = false; startFillGame(); }, 1200);
+        // ** NEW ** More robust timeout
+        setTimeout(() => {
+            try {
+                startFillGame();
+            } finally {
+                isProcessing = false;
+            }
+        }, 1200);
     }
     
     // === END GAME & STATS ===
@@ -287,19 +352,19 @@ document.addEventListener('DOMContentLoaded', () => {
         let resultsHTML = `<p class="end-game-message">${randomCongrats}</p>`;
         
         const incorrectList = incorrectAnswers[gameType] || [];
-        const gameDescription = { mc: "Quiz", write: "Writing", fill: "Fill-in", match: "Matching" }[gameType];
+        const gameDescription = { mc: "Trắc nghiệm", write: "Luyện viết", fill: "Điền từ", match: "Nối từ" }[gameType];
         
         if (incorrectList.length > 0) {
-            resultsHTML += `<h3>Review your mistakes in the ${gameDescription} game:</h3><ul class="results-list">`;
+            resultsHTML += `<h3>Các lỗi sai trong game ${gameDescription}:</h3><ul class="results-list">`;
             incorrectList.forEach(item => {
                 const qText = (gameType === 'mc' || gameType === 'match') ? item.question.english : item.question.vietnamese;
-                const userAns = item.userAnswer || '<i>blank</i>';
-                const correctAns = (gameType === 'mc') ? item.question.vietnamese : item.question.english;
-                resultsHTML += `<li><strong>${qText}</strong>: You answered <span class="user-answer">${userAns}</span>. Correct is <span class="correct-answer">${correctAns}</span></li>`;
+                const userAns = item.userAnswer || '<i>bỏ trống</i>';
+                const correctAns = (gameType === 'mc' || gameType === 'match') ? item.question.vietnamese : item.question.english;
+                resultsHTML += `<li><strong>${qText}</strong>: Bạn đã trả lời <span class="user-answer">${userAns}</span>. Đáp án đúng là <span class="correct-answer">${correctAns}</span></li>`;
             });
             resultsHTML += '</ul>';
         } else {
-             resultsHTML += `<p>Perfect score in the ${gameDescription} game!</p>`;
+             resultsHTML += `<p>Bạn đã hoàn thành xuất sắc game ${gameDescription}!</p>`;
         }
         
         gameArea.innerHTML = resultsHTML;
@@ -309,14 +374,14 @@ document.addEventListener('DOMContentLoaded', () => {
     function showFinalStats() { 
         const totalErrors = Object.values(incorrectAnswers).reduce((acc, arr) => acc + arr.length, 0);
         if (totalErrors === 0) { 
-            finalStatsContainer.innerHTML = '<h2>Final Report</h2><p style="font-size: 1.2em; color: var(--success-color);"><strong>Absolutely Perfect! You made zero mistakes across all games!</strong></p>'; 
+            finalStatsContainer.innerHTML = '<h2>Báo cáo tổng kết</h2><p style="font-size: 1.2em; color: var(--success-color);"><strong>Thật tuyệt vời! Bạn không mắc lỗi nào trong tất cả các game!</strong></p>'; 
         } else { 
-            let statsHTML = '<h2>Final Report: All Mistakes</h2><ul>'; 
-            if(incorrectAnswers.mc.length > 0) incorrectAnswers.mc.forEach(item => statsHTML += `<li>[Quiz] Word <strong>${item.question.english}</strong>: Wrong meaning. Correct is <span class="correct-answer">${item.question.vietnamese}</span></li>`); 
-            if(incorrectAnswers.write.length > 0) incorrectAnswers.write.forEach(item => statsHTML += `<li>[Writing] Meaning <strong>${item.question.vietnamese}</strong>: Typed incorrectly. Correct is <span class="correct-answer">${item.question.english}</span></li>`); 
-            if(incorrectAnswers.fill.length > 0) incorrectAnswers.fill.forEach(item => statsHTML += `<li>[Fill-in] Hint <strong>${item.question.vietnamese}</strong>: Filled incorrectly. Correct is <span class="correct-answer">${item.question.english}</span></li>`); 
-            if(incorrectAnswers.match.length > 0) incorrectAnswers.match.forEach(item => statsHTML += `<li>[Matching] Word <strong>${item.question.english}</strong>: You matched incorrectly.</li>`); 
-            statsHTML += '</ul><p>Review these words and try again!</p>'; 
+            let statsHTML = '<h2>Báo cáo tổng kết: Các lỗi sai</h2><ul>'; 
+            if(incorrectAnswers.mc.length > 0) incorrectAnswers.mc.forEach(item => statsHTML += `<li>[Trắc nghiệm] Từ <strong>${item.question.english}</strong>: Sai nghĩa. Đáp án đúng: <span class="correct-answer">${item.question.vietnamese}</span></li>`); 
+            if(incorrectAnswers.write.length > 0) incorrectAnswers.write.forEach(item => statsHTML += `<li>[Luyện viết] Nghĩa <strong>${item.question.vietnamese}</strong>: Gõ sai. Đáp án đúng: <span class="correct-answer">${item.question.english}</span></li>`); 
+            if(incorrectAnswers.fill.length > 0) incorrectAnswers.fill.forEach(item => statsHTML += `<li>[Điền từ] Gợi ý <strong>${item.question.vietnamese}</strong>: Điền sai. Đáp án đúng: <span class="correct-answer">${item.question.english}</span></li>`); 
+            if(incorrectAnswers.match.length > 0) incorrectAnswers.match.forEach(item => statsHTML += `<li>[Nối từ] Từ <strong>${item.question.english}</strong>: Bạn đã nối sai.</li>`); 
+            statsHTML += '</ul><p>Hãy ôn lại các từ này và thử lại nhé!</p>'; 
             finalStatsContainer.innerHTML = statsHTML; 
         } 
         finalStatsContainer.classList.remove('hidden'); 

@@ -88,7 +88,7 @@ button { font-family: 'Be Vietnam Pro', sans-serif; font-size: 18px; padding: 15
 .mc-option { background-color: #fff; border: 2px solid #ddd; padding: 20px; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; font-size: 18px; font-weight: 500; }
 .mc-option:hover { border-color: var(--primary-color); color: var(--primary-color); }
 .mc-option.correct, .match-item.correct { background-color: var(--success-color) !important; border-color: var(--success-color) !important; color: white !important; }
-.mc-option.incorrect { background-color: var(--danger-color); border-color: var(--danger-color); color: white; }
+.mc-option.incorrect, .match-item.incorrect { background-color: var(--danger-color); border-color: var(--danger-color); color: white; }
 .match-container { display: flex; justify-content: space-around; gap: 20px; }
 .match-column { display: flex; flex-direction: column; gap: 10px; width: 45%; }
 .match-item { padding: 15px; border: 2px solid #ccc; border-radius: 8px; cursor: pointer; background-color: #fff; user-select: none; transition: background-color 0.2s, border-color 0.2s, transform 0.2s; }

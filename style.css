@@ -1,219 +1,87 @@
-@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&display=swap');
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Vocabulary Learning Assistant</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Libraries for file reading -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.5.1/mammoth.browser.min.js"></script>
+</head>
+<body>
 
-:root {
-    --primary-color: #0d6efd; 
-    --secondary-color: #50e3c2;
-    --accent-color: #f5a623;
-    --danger-color: #d0021b;
-    --success-color: #198754;
-    --fill-color: #6f42c1;
-    --bg-color: #f0f2f5;
-    --text-color: #333;
-    --card-bg: #ffffff;
-    --shadow: 0 4px 20px rgba(0,0,0,0.08);
-}
+    <div class="container">
+        <!-- MODIFIED: Shorter Title -->
+        <h1 class="main-title"><i class="fa-solid fa-brain"></i> Vocabulary Learning</h1>
+        <div id="loader" class="hidden">Đang xử lý file...</div>
+        
+        <!-- === INPUT SECTION === -->
+        <div id="input-section">
+            <!-- MODIFIED: Shorter Subtitle -->
+            <h2>Bước 1: Nhập từ mới</h2>
+            <p>Dán trực tiếp hoặc tải lên file. Định dạng: <code>English Word - Nghĩa Tiếng Việt</code></p>
+            <!-- MODIFIED: Reduced rows for better fit on mobile -->
+            <textarea id="word-input" rows="8" placeholder="Ví dụ:
+apple - quả táo
+book - quyển sách
+honeymoon - tuần trăng mật"></textarea>
+            
+            <div class="file-upload-wrapper">
+                <label for="file-upload" class="custom-file-upload">
+                    <i class="fa-solid fa-file-arrow-up"></i> Tải lên file (.docx, .pdf)
+                </label>
+                <input id="file-upload" type="file" accept=".docx,.pdf"/>
+                <span id="file-name"></span>
+            </div>
+            <button id="create-game-btn" class="main-action-btn"><i class="fa-solid fa-gamepad"></i> Tạo Game</button>
+        </div>
 
-body {
-    font-family: 'Be Vietnam Pro', sans-serif;
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    margin: 0;
-    padding: 20px;
-    overflow-x: hidden;
-}
+        <!-- === GAME SELECTION SECTION === -->
+        <div id="game-selection" class="hidden">
+            <h2>Bước 2: Chọn một game để bắt đầu!</h2>
+            <div class="game-options">
+                <button id="flashcard-game-btn" class="game-btn flashcard-btn"><i class="fa-solid fa-clone"></i> <span>Flashcards</span></button>
+                <button id="mc-game-btn" class="game-btn mc-btn"><i class="fa-solid fa-list-check"></i> <span>Trắc nghiệm</span></button>
+                <button id="match-game-btn" class="game-btn match-btn"><i class="fa-solid fa-link"></i> <span>Nối từ</span></button>
+                <button id="write-game-btn" class="game-btn write-btn"><i class="fa-solid fa-keyboard"></i> <span>Luyện viết</span></button>
+                <button id="fill-game-btn" class="game-btn fill-btn"><i class="fa-solid fa-pen-ruler"></i> <span>Điền từ</span></button>
+            </div>
+             <div id="final-stats-container" class="hidden"></div>
+             <!-- NEW: Button to go back to the input screen -->
+             <button id="back-to-input-btn" class="secondary-action-btn"><i class="fa-solid fa-pen-to-square"></i> Chỉnh sửa danh sách từ</button>
+        </div>
 
-.container {
-    width: 100%;
-    max-width: 800px;
-    background: var(--card-bg);
-    border-radius: 16px;
-    box-shadow: var(--shadow);
-    padding: 30px;
-    text-align: center;
-    margin-bottom: 20px;
-    position: relative;
-    z-index: 10;
-}
+        <!-- === GAME PLAYING SECTION === -->
+        <div id="game-container" class="hidden">
+            <h2 id="game-title">Tên Game</h2>
+            <div id="stats-bar" class="stats-bar">
+                <div class="stat-item correct"><span class="stat-label">Đúng</span><span id="stats-correct" class="stat-value">0</span></div>
+                <div class="stat-item incorrect"><span class="stat-label">Sai</span><span id="stats-incorrect" class="stat-value">0</span></div>
+                <div class="stat-item progress"><span class="stat-label">Tiến độ</span><span id="stats-progress" class="stat-value">0/0</span></div>
+                <div class="stat-item accuracy"><span class="stat-label">Tỷ lệ</span><span id="stats-accuracy" class="stat-value">0%</span></div>
+            </div>
+            <div id="game-area"></div>
+            <button id="back-to-menu-btn" class="hidden">Quay lại Menu</button>
+        </div>
+    </div>
+    
+    <div id="character-container">
+        <img id="character-img" src="" alt="Animated Character">
+    </div>
 
-.main-title { color: var(--primary-color); margin-bottom: 20px; }
-.main-title .fa-brain { margin-right: 10px; }
-h2 { margin-top: 0; margin-bottom: 20px; }
-.highlight-word { color: var(--primary-color); font-size: 1.2em; font-weight: 700; }
-.hidden { display: none !important; }
-#loader { font-size: 1.2em; color: var(--primary-color); padding: 20px; }
+    <!-- Sound Effects -->
+    <audio id="correct-sound" src="data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjQ1LjEwMAAAAAAAAAAAAAAA//tAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWW6HxoYBAAjSX//////////////////////////////////////////////////AAD/20AgYABAAs2g//+xQCEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2.AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBA-..A..//uIAAAAAAAAAAAAAABR1pl6Rk5TDAAAAABJRU5ErkJggg==" playsinline></audio>
+    <audio id="incorrect-sound" src="data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4LjQ1LjEwMAAAAAAAAAAAAAAA//tAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWW6HxoYBAAjSX//////////////////////////////////////////////////AAD/20Ags2g//+xQCEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2t4GFgss2g//+wQDEA//2.AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBA-..A..//uIAAAAAAAAAAAAAABR1pl6Rk5TDAAAAABJRU5ErkJggg==" playsinline></audio>
+    
+    <!-- MODIFIED: Smaller footer -->
+    <footer>
+        <p>© 2024 Copyright Vũ Xuân Hùng</p>
+    </footer>
 
-/* Input Section */
-#input-section textarea { width: 100%; padding: 15px; border-radius: 8px; border: 2px solid #ddd; font-size: 16px; margin-bottom: 15px; box-sizing: border-box; transition: border-color 0.3s; }
-#input-section textarea:focus { border-color: var(--primary-color); outline: none; }
-#input-section code { background-color: #eef2f5; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
-.file-upload-wrapper { margin: 15px 0 20px 0; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 10px; }
-.custom-file-upload { border: 1px solid var(--primary-color); display: inline-block; padding: 8px 15px; cursor: pointer; background-color: #fff; color: var(--primary-color); border-radius: 8px; font-weight: 500; transition: all 0.2s ease; }
-.custom-file-upload:hover { background-color: var(--primary-color); color: #fff; }
-input[type="file"] { display: none; }
-#file-name { color: #555; font-style: italic; }
-
-/* Buttons */
-button { font-family: 'Be Vietnam Pro', sans-serif; font-size: 18px; padding: 15px 30px; border: none; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; font-weight: 700; }
-.main-action-btn { background: var(--primary-color); color: white; width: 100%; }
-.main-action-btn:hover { background: #0b5ed7; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(13, 110, 253, 0.4); }
-
-/* Game Selection */
-.game-options { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin-top: 30px; }
-.game-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 160px; height: 110px; color: white; font-size: 18px; }
-.game-btn i { font-size: 30px; margin-bottom: 10px; }
-/* NEW: Flashcard Button Style */
-.flashcard-btn { background: linear-gradient(45deg, #11998e, #38ef7d); }
-.mc-btn { background: linear-gradient(45deg, #2980B9, #6DD5FA); }
-.match-btn { background: linear-gradient(45deg, #f7971e, #ffd200); }
-.write-btn { background: linear-gradient(45deg, #8E2DE2, #4A00E0); }
-.fill-btn { background: linear-gradient(45deg, var(--fill-color), #243b55); }
-.game-btn:hover { transform: scale(1.05); box-shadow: 0 8px 25px rgba(0,0,0,0.2); }
-
-/* Stats Bar Styles */
-.stats-bar { display: flex; flex-wrap: wrap; justify-content: space-around; background-color: #e9ecef; border-radius: 10px; padding: 10px; margin-bottom: 25px; gap: 10px;}
-.stat-item { text-align: center; flex-grow: 1; }
-.stat-label { font-size: 12px; color: #6c757d; display: block; }
-.stat-value { font-size: 20px; font-weight: 700; }
-.stat-item.correct .stat-value { color: var(--success-color); }
-.stat-item.incorrect .stat-value { color: var(--danger-color); }
-.stat-item.progress .stat-value { color: #495057; }
-.stat-item.accuracy .stat-value { color: var(--primary-color); }
-
-/* Game Area Styles */
-.game-prompt { font-size: 20px; font-weight: 400; margin-bottom: 20px; }
-.mc-options { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-.mc-option { background-color: #fff; border: 2px solid #ddd; padding: 20px; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; font-size: 18px; font-weight: 500; }
-.mc-option:hover { border-color: var(--primary-color); color: var(--primary-color); }
-.mc-option.correct, .match-item.correct { background-color: var(--success-color) !important; border-color: var(--success-color) !important; color: white !important; }
-.mc-option.incorrect, .match-item.incorrect { background-color: var(--danger-color); border-color: var(--danger-color); color: white; }
-.match-container { display: flex; justify-content: space-around; gap: 20px; }
-.match-column { display: flex; flex-direction: column; gap: 10px; width: 45%; }
-.match-item { padding: 15px; border: 2px solid #ccc; border-radius: 8px; cursor: pointer; background-color: #fff; user-select: none; transition: background-color 0.2s, border-color 0.2s, transform 0.2s; }
-.match-item.selected { border-color: var(--accent-color); background-color: #fffbe6; transform: scale(1.05); }
-.match-item.disabled { cursor: default; opacity: 0.6; }
-.write-input-container { display: flex; justify-content: center; align-items: center; gap: 10px; }
-#write-input, #fill-input { border-radius: 8px; padding: 10px; font-size: 18px; text-align: center; border: 2px solid #ddd; }
-#write-input:focus, #fill-input:focus { outline: none; border-color: var(--primary-color); }
-.fill-sentence { font-size: 1.5em; margin-bottom: 15px; line-height: 1.6; }
-#fill-input { width: 180px; font-size: 0.9em; background: transparent; }
-.fill-clue { font-size: 1.1em; color: #666; margin-bottom: 20px; }
-#check-write-btn, #check-fill-btn { background-color: var(--success-color); color: white; margin-top: 15px; }
-
-
-/* NEW: Flashcard Game Styles */
-#flashcard-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-}
-.flashcard {
-    background-color: transparent;
-    width: 100%;
-    max-width: 450px;
-    height: 250px;
-    perspective: 1000px;
-    cursor: pointer;
-}
-.flashcard-inner {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    text-align: center;
-    transition: transform 0.6s;
-    transform-style: preserve-3d;
-    box-shadow: var(--shadow);
-    border-radius: 16px;
-}
-.flashcard.flipped .flashcard-inner {
-    transform: rotateY(180deg);
-}
-.flashcard-front, .flashcard-back {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2.5em;
-    font-weight: 700;
-    padding: 20px;
-    border-radius: 16px;
-    box-sizing: border-box;
-}
-.flashcard-front {
-    background: linear-gradient(135deg, #fff, #eef2f5);
-    color: var(--primary-color);
-}
-.flashcard-back {
-    background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
-    color: white;
-    transform: rotateY(180deg);
-}
-.flashcard-hint {
-    font-size: 0.9em;
-    font-style: italic;
-    color: #888;
-    margin-top: 10px;
-}
-.flashcard-nav {
-    display: flex;
-    gap: 15px;
-    align-items: center;
-}
-.flashcard-nav button {
-    padding: 10px 20px;
-    font-size: 16px;
-    min-width: 100px;
-}
-.flashcard-nav button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    background-color: #ccc;
-}
-#flashcard-speak {
-    background-color: var(--accent-color);
-    color: white;
-    min-width: auto;
-    padding: 10px 15px;
-}
-
-
-/* Results & Stats */
-.results-list, #final-stats-container ul { list-style-type: none; padding: 0; text-align: left; max-width: 500px; margin: 20px auto; border: 1px solid #ddd; border-radius: 8px; padding: 20px; background-color: #fafafa; }
-.results-list li, #final-stats-container li { padding: 10px; border-bottom: 1px solid #eee; }
-.results-list li:last-child { border-bottom: none; }
-.results-list .correct-answer, #final-stats-container .correct-answer { color: var(--success-color); font-weight: bold; }
-.results-list .user-answer, #final-stats-container .user-answer { color: var(--danger-color); text-decoration: line-through; }
-.end-game-message { font-size: 2em; font-weight: bold; color: var(--primary-color); }
-
-#back-to-menu-btn { margin-top: 20px; background-color: var(--accent-color); color: white; }
-
-/* Character Styles */
-#character-container {
-    position: fixed;
-    bottom: -10px;
-    right: 10px;
-    width: clamp(120px, 15vw, 180px); /* Responsive size */
-    height: auto;
-    z-index: 1; 
-    pointer-events: none;
-}
-#character-img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-}
-.happy-animation { animation: happy-bounce 0.6s ease; }
-.sad-animation { animation: sad-shake 0.5s ease; }
-@keyframes happy-bounce { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-20px) scale(1.1); } }
-@keyframes sad-shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px) rotate(-8deg); } 75% { transform: translateX(8px) rotate(8deg); } }
-
-footer { width: 100%; text-align: center; padding: 10px 0; font-size: 14px; color: #888; position: relative; z-index: 10; }
+    <script src="script.js"></script>
+</body>
+</html>

@@ -66,6 +66,8 @@ button { font-family: 'Be Vietnam Pro', sans-serif; font-size: 18px; padding: 15
 .game-options { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin-top: 30px; }
 .game-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 160px; height: 110px; color: white; font-size: 18px; }
 .game-btn i { font-size: 30px; margin-bottom: 10px; }
+/* NEW: Flashcard Button Style */
+.flashcard-btn { background: linear-gradient(45deg, #11998e, #38ef7d); }
 .mc-btn { background: linear-gradient(45deg, #2980B9, #6DD5FA); }
 .match-btn { background: linear-gradient(45deg, #f7971e, #ffd200); }
 .write-btn { background: linear-gradient(45deg, #8E2DE2, #4A00E0); }
@@ -101,6 +103,87 @@ button { font-family: 'Be Vietnam Pro', sans-serif; font-size: 18px; padding: 15
 #fill-input { width: 180px; font-size: 0.9em; background: transparent; }
 .fill-clue { font-size: 1.1em; color: #666; margin-bottom: 20px; }
 #check-write-btn, #check-fill-btn { background-color: var(--success-color); color: white; margin-top: 15px; }
+
+
+/* NEW: Flashcard Game Styles */
+#flashcard-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+.flashcard {
+    background-color: transparent;
+    width: 100%;
+    max-width: 450px;
+    height: 250px;
+    perspective: 1000px;
+    cursor: pointer;
+}
+.flashcard-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+    box-shadow: var(--shadow);
+    border-radius: 16px;
+}
+.flashcard.flipped .flashcard-inner {
+    transform: rotateY(180deg);
+}
+.flashcard-front, .flashcard-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5em;
+    font-weight: 700;
+    padding: 20px;
+    border-radius: 16px;
+    box-sizing: border-box;
+}
+.flashcard-front {
+    background: linear-gradient(135deg, #fff, #eef2f5);
+    color: var(--primary-color);
+}
+.flashcard-back {
+    background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+    color: white;
+    transform: rotateY(180deg);
+}
+.flashcard-hint {
+    font-size: 0.9em;
+    font-style: italic;
+    color: #888;
+    margin-top: 10px;
+}
+.flashcard-nav {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+.flashcard-nav button {
+    padding: 10px 20px;
+    font-size: 16px;
+    min-width: 100px;
+}
+.flashcard-nav button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #ccc;
+}
+#flashcard-speak {
+    background-color: var(--accent-color);
+    color: white;
+    min-width: auto;
+    padding: 10px 15px;
+}
 
 
 /* Results & Stats */

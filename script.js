@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const gameArea = document.getElementById('game-area');
     const backToMenuBtn = document.getElementById('back-to-menu-btn');
     const finalStatsContainer = document.getElementById('final-stats-container');
-    const characterImg = document.getElementById('character-img');
+    // REMOVED: characterImg
     const correctSound = document.getElementById('correct-sound');
     const incorrectSound = document.getElementById('incorrect-sound');
     const statsBar = document.getElementById('stats-bar');
@@ -19,7 +19,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const statsIncorrect = document.getElementById('stats-incorrect').parentElement;
     const statsProgress = document.getElementById('stats-progress');
     const statsAccuracy = document.getElementById('stats-accuracy').parentElement;
-    // NEW: Get the new button
     const backToInputBtn = document.getElementById('back-to-input-btn');
 
     // === GAME STATE & CONFIG ===
@@ -32,12 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let isProcessing = false;
     let audioInitialized = false;
     let speechVoice = null;
-
-    const characterGifs = {
-        idle: 'data:image/gif;base64,R0lGODlhZABkAPQAAAAAAP///5aWlmtra21tbZmZmc3NzePj4+vr6/39/f7+/v///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH/C05FVFNDQVBFMi4wAwEAAAAh+QQJKAAPACwAAAAAZABkAAAF/6AnjmRpnmiqrmzrvnAsz3Rt33iu73zv/8CgcEgsGo/IpHLJbDqf0Kh0Sq1ar9isdsvter/gsHhMLpvP6LR6zW673/C4fE6v2+/4vH7P7/v/gIFxgYKDhIWGh4iJiouMjY6PkJGSk5SVlpeYmZqbnJ2en6ChoqOkpaanqKmqq6ytrq+wsbKztLW2t7i5uru8vb6/wMHCw8TFxsfIycrLzM3Oz9DR0tPU1dbX2Nna29zd3t/g4eLj5OXm5+jp6uvs7e7v8PHy8/T19vf4+fr7/P3+/wADChxIsKDBgwgTKlzIsKHDhxAjSpxIsaLFixgzatzIsaPHjyBDihxJsqTJkyhTqlzJsqXLlzBjypxJs6bNmzhz6tzJs6fPn0CDCh1KtKjRo0iTKl3KtKnTp1CjSp1KtarVq1izat3KtavXr2DDih1LtqzZs2jTql3Ltq3bt3Djyp1Lt67du3jz6t3Lt6/fv4ADCx5MuLDhw4gTK17MuLHjx5AjS55MubLly5gza97MubPnz6BDix5NurTp06hTq17NurXr17Bjy55Nu7bt27hz697Nu7fv38CDCx9OvLjx48iTK1/OvLnz59CjS59Ovbr169iza9/Ovbv37+DDix9Pvrz58+jTq1/Pvr379/Djy59Pv779+/jz69/Pv7///wAGKOAADEBQQIMNzoFghBVeaOGFGGao4YYcghjiiCSWaOKJKKao4oostujiizDGKOOMNNYoIgAAIfkECQoADwAsAAAAAGQAZAAABf+gJ45kaZ5oqq5s675wLM93bd94ru987//AoHCIFAqPyKRyyWw6n9CodEqtWq/YrHbL7Xq/4LA4rJbM5/Raj8xu+57wsNlPr9vv+Lx+z+/7/4CBgH+ChYeGf4iJiouMjY6PkJF+k5SVlpeYmZqbnJ12n6ChoqOkpaanqKmqq6ytrq94sbKztLW2t7i5uru8vb58v8HCw8TFxsfIycrLzM3OvL/P0NHS09TV1tfY2drb3N22xt/g4eLj5OXm5+jp6uvs7e5yu/Hy8/T19vf4+fr7/P17/P8AAwocSLCgwYMIEypcyLChw4cQI0qcSLGixYsYM2rcyLGjx48gQ4ocSbKkyZMoU6pcybKly5cwY8qcSbOmzZs4c+rcybOnz59AgwodSrSo0aNIkypdyrSp06dQo0qdSrWq1atYs2rdyrWr169gw4odS7as2bNo06pdy7at27dw48qdS7eu3bt48+rdy7ev37+AAwseTLiw4cOIEytezLix48eQI0ueTLiY5cuYM2vezLmz58+gQ4seTbq06dOoU6tezbq169ewY8ueTbu27du4c+vezbu379/AgwsfTry48ePIkytfzry58+fQo0ufTr269evYs2vfzr279+/gw4sfT768+fPo06tfz769+/fw48ufT7++/fv48+vfz7+///8ABijggAQWaOCBCCao4IIMNujggxBGKOGEFFZo4YUYZqjhhhx26OGHIIYo4ogklmgiAAA7',
-        happy: 'data:image/gif;base64,R0lGODlhZABkAPQAAAAAAP///5aWlmtra21tbZmZmc3NzePj4+vr6/39/f7+/v///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH/C05FVFNDQVBFMi4wAwEAAAAh+QQJKAAPACwAAAAAZABkAAAF/6AnjmRpnmiqrmzrvnAsz3Rt33iu73zv/8CgcEgsGo/IpHLJbDqf0Kh0Sq1ar9isdsvter/gsHhMLpvP6LR6zW673/C4fE6v2+/4vH7P7/v/gIFxgYKDhIWGh4iJiouMjY6PkJGSk5SVlpeYmZqbnJ2en6ChoqOkpaanqKmqq6ytrq+wsbKztLW2t7i5uru8vb6/wMHCw8TFxsfIycrLzM3Oz9DR0tPU1dbX2Nna29zd3t/g4eLj5OXm5+jp6uvs7e7v8PHy8/T19vf4+fr7/P3+/wADChxIsKDBgwgTKlzIsKHDhxAjSpxIsaLFixgzatzIsaPHjyBDihxJsqTJkyhTqlzJsqXLlzBjypxJs6bNmzhz6tzJs6fPn0CDCh1KtKjRo0iTKl3KtKnTp1CjSp1KtarVq1izat3KtavXr2DDih1LtqzZs2jTql3Ltq3bt3Djyp1Lt67du3jz6t3Lt6/fv4ADCx5MuLDhw4gTK17MuLHjx5AjS55MubLly5gza97MubPnz6BDix5NurTp06hTq17NurXr17Bjy55Nu7bt27hz697Nu7fv38CDCx9OvLjx48iTK1/OvLnz59CjS59Ovbr169iza9/Ovbv37+DDix9Pvrz58+jTq1/Pvr379/Djy59Pv779+/jz69/Pv7///wAGKOAADEBQQIMNzoFghBVeaOGFGGao4YYcghjiiCSWaOKJKKao4oostujiizDGKOOMNNYoIgAAIfkECQoADwAsAAAAAGQAZAAABf+gJ45kaZ5oqq5s675wLM93bd94ru987//AoHCIFAqPyKRyyWw6n9CodEqtWq/YrHbL7Xq/4LA4rJbM5/Raj8xu+57wsNlPr9vv+Lx+z+/7/4CBgH+ChYeGf4iJiouMjY6PkJF+k5SVlpeYmZqbnJ12n6ChoqOkpaanqKmqq6ytrq94sbKztLW2t7i5uru8vb58v8HCw8TFxsfIycrLzM3OvL/P0NHS09TV1tfY2drb3N22xt/g4eLj5OXm5+jp6uvs7e5yu/Hy8/T19vf4+fr7/P17/P8AAwocSLCgwYMIEypcyLChw4cQI0qcSLGixYsYM2rcyLGjx48gQ4ocSbKkyZMoU6pcybKly5cwY8qcSbOmzZs4c+rcybOnz59AgwodSrSo0aNIkypdyrSp06dQo0qdSrWq1atYs2rdyrWr169gw4odS7as2bNo06pdy7at27dw48qdS7eu3bt48+rdy7ev37+AAwseTLiw4cOIEytezLix48eQI0ueTLiY5cuYM2vezLmz58+gQ4seTbq06dOoU6tezbq169ewY8ueTbu27du4c+vezbu379/AgwsfTry48ePIkytfzry58+fQo0ufTr269evYs2vfzr279+/gw4sfT768+fPo06tfz769+/fw48ufT7++/fv48+vfz7+///8ABijggAQWaOCBCCao4IIMNujggxBGKOGEFFZo4YUYZqjhhhx26OGHIIYo4ogklmgiAAA7',
-        sad: 'data:image/gif;base64,R0lGODlhZABkAPQAAAAAAP///5aWlpubm8PDw8zMzLCwsOPj4+3t7f///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH/C05FVFNDQVBFMi4wAwEAAAAh+QQJKAAPACwAAAAAZABkAAAF/6AnjmRpnmiqrmzrvnAsz3Rt33iu73zv/8CgcEgsGo/IpHLJbDqf0Kh0Sq1ar9isdsvter/gsHhMLpvP6LR6zW673/C4fE6v2+/4vH7P7/v/gIFxgYKDhIWGh4iJiouMjY6PkJGSk5SVlpeYmZqbnJ2en6ChoqOkpaanqKmqq6ytrq+wsbKztLW2t7i5uru8vb6/wMHCw8TFxsfIycrLzM3Oz9DR0tPU1dbX2Nna29zd3t/g4eLj5OXm5+jp6uvs7e7v8PHy8/T19vf4+fr7/P3+/wADChxIsKDBgwgTKlzIsKHDhxAjSpxIsaLFixgzatzIsaPHjyBDihxJsqTJkyhTqlzJsqXLlzBjypxJs6bNmzhz6tzJs6fPn0CDCh1KtKjRo0iTKl3KtKnTp1CjSp1KtarVq1izat3KtavXr2DDih1LtqzZs2jTql3Ltq3bt3Djyp1Lt67du3jz6t3Lt6/fv4ADCx5MuLDhw4gTK17MuLHjx5AjS55MubLly5gza97MubPnz6BDix5NurTp06hTq17NurXr17Bjy55Nu7bt27hz697Nu7fv38CDCx9OvLjx48iTK1/OvLnz59CjS59Ovbr169iza9/Ovbv37+DDix9Pvrz58+jTq1/Pvr379/Djy59Pv779+/jz69/Pv7///wAGKOAADEBQQIMNzoFghBVeaOGFGGao4YYcghjiiCSWaOKJKKao4oostujiizDGKOOMNNYoIgAAIfkECQoADwAsAAAAAGQAZAAABf+gJ45kaZ5oqq5s675wLM93bd94ru987//AoHCIFAqPyKRyyWw6n9CodEqtWq/YrHbL7Xq/4LA4rJbM5/Raj8xu+57wsNlPr9vv+Lx+z+/7/4CBgH+ChYeGf4iJiouMjY6PkJF+k5SVlpeYmZqbnJ12n6ChoqOkpaanqKmqq6ytrq94sbKztLW2t7i5uru8vb58v8HCw8TFxsfIycrLzM3OvL/P0NHS09TV1tfY2drb3N22xt/g4eLj5OXm5+jp6uvs7e5yu/Hy8/T19vf4+fr7/P17/P8AAwocSLCgwYMIEypcyLChw4cQI0qcSLGixYsYM2rcyLGjx48gQ4ocSbKkyZMoU6pcybKly5cwY8qcSbOmzZs4c+rcybOnz59AgwodSrSo0aNIkypdyrSp06dQo0qdSrWq1atYs2rdyrWr169gw4odS7as2bNo06pdy7at27dw48qdS7eu3bt48+rdy7ev37+AAwseTLiw4cOIEytezLix48eQI0ueTLiY5cuYM2vezLmz58+gQ4seTbq06dOoU6tezbq169ewY8ueTbu27du4c+vezbu379/AgwsfTry48ePIkytfzry58+fQo0ufTr269evYs2vfzr279+/gw4sfT768+fPo06tfz769+/fw48ufT7++/fv48+vfz7+///8ABijggAQWaOCBCCao4IIMNujggxBGKOGEFFZo4YUYZqjhhhx26OGHIIYo4ogklmgiAAA7'
-    };
+    // REMOVED: characterGifs
     const congratsMessages = ["Congratulations!", "Excellent!", "Well Done!", "You're a Star!", "Amazing Job!"];
     const fillTemplates = [
         "What is the definition of ______?",
@@ -89,7 +83,6 @@ document.addEventListener('DOMContentLoaded', () => {
         createGame();
     });
     
-    // NEW: Listener for the back to input button
     backToInputBtn.addEventListener('click', () => {
         gameSelection.classList.add('hidden');
         inputSection.classList.remove('hidden');
@@ -104,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
     backToMenuBtn.addEventListener('click', showGameSelection);
     
     initializeSpeech();
-    setCharacterState('idle');
+    // REMOVED: setCharacterState('idle');
     loadFromLocalStorage();
 
     // === CORE LOGIC ===
@@ -141,7 +134,6 @@ document.addEventListener('DOMContentLoaded', () => {
         incorrectCount = 0;
         isProcessing = false;
         incorrectAnswers[gameType] = [];
-        // No random sort for flashcards, learn in order
         if (gameType !== 'flashcard') {
             wordList.sort(() => Math.random() - 0.5);
         }
@@ -154,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
             'fill': { title: "Game Điền Từ", start: startFillGame }
         };
         gameTitle.innerText = gameFunctions[gameType].title;
-        updateStatsBar(); // Update stats bar before starting
+        updateStatsBar(); 
         gameFunctions[gameType].start();
     }
     
@@ -162,8 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
         gameContainer.classList.add('hidden');
         gameSelection.classList.remove('hidden');
         backToMenuBtn.classList.add('hidden');
-        setCharacterState('idle');
-        // Final stats logic might need adjustment if more games are added
+        // REMOVED: setCharacterState('idle');
     }
 
     // === UI & STATE HANDLERS ===
@@ -184,16 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
         sound.play().catch(error => console.error("Sound effect failed to play:", error)); 
     };
     
-    function setCharacterState(state) {
-        characterImg.src = characterGifs[state];
-        characterImg.classList.remove('happy-animation', 'sad-animation');
-    }
-    
-    const triggerCharacterAnimation = (state) => {
-        setCharacterState(state);
-        characterImg.classList.add(state === 'happy' ? 'happy-animation' : 'sad-animation');
-        setTimeout(() => setCharacterState('idle'), 800);
-    };
+    // REMOVED: setCharacterState and triggerCharacterAnimation functions
 
     function updateStatsBar() {
         const isFlashcard = gameTitle.innerText.includes("Flashcards");
@@ -221,7 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const handleCorrectAnswer = (wordToSpeak) => {
         correctCount++;
         playSound(correctSound);
-        triggerCharacterAnimation('happy');
+        // REMOVED: triggerCharacterAnimation('happy');
         if (wordToSpeak) speak(wordToSpeak);
         updateStatsBar();
     };
@@ -229,13 +211,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const handleIncorrectAnswer = (data) => {
         incorrectCount++;
         playSound(incorrectSound);
-        triggerCharacterAnimation('sad');
+        // REMOVED: triggerCharacterAnimation('sad');
         if (data && data.type && incorrectAnswers[data.type]) {
              incorrectAnswers[data.type].push({ question: data.question, userAnswer: data.userAnswer });
         }
         updateStatsBar();
     };
 
+    // ... (The rest of the game logic functions from the previous response remain unchanged) ...
     // === FLASHCARD GAME LOGIC ===
     function startFlashcardGame() {
         currentQuestionIndex = 0;
@@ -277,7 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         card.addEventListener('click', () => card.classList.toggle('flipped'));
         speakBtn.addEventListener('click', (e) => {
-            e.stopPropagation(); // Prevent card from flipping when clicking the speak button
+            e.stopPropagation(); 
             speak(currentWord.english);
         });
 
@@ -328,7 +311,6 @@ document.addEventListener('DOMContentLoaded', () => {
             handleIncorrectAnswer({ type: 'mc', question: currentWord, userAnswer: selectedAnswer });
         }
         currentQuestionIndex++;
-
         setTimeout(() => {
             try { startMultipleChoiceGame(); } finally { isProcessing = false; }
         }, 1500);
@@ -447,7 +429,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // === END GAME & STATS ===
     function endGame(gameType) {
-        if(gameType === 'flashcard') { // Flashcards don't have an "end game" screen
+        if(gameType === 'flashcard') {
              showGameSelection();
              return;
         }

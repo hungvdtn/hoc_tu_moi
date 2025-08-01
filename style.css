@@ -13,6 +13,11 @@
     --shadow: 0 4px 20px rgba(0,0,0,0.08);
 }
 
+/* MODIFIED: Stricter rules to prevent horizontal scroll on all devices */
+html, body {
+    overflow-x: hidden;
+}
+
 body {
     font-family: 'Be Vietnam Pro', sans-serif;
     background-color: var(--bg-color);
@@ -23,9 +28,8 @@ body {
     align-items: center;
     min-height: 100vh;
     margin: 0;
-    padding: 10px; /* MODIFIED: Smaller padding on body for mobile */
+    padding: 10px;
     box-sizing: border-box;
-    overflow-x: hidden;
 }
 
 .container {
@@ -34,14 +38,13 @@ body {
     background: var(--card-bg);
     border-radius: 16px;
     box-shadow: var(--shadow);
-    padding: 25px; /* MODIFIED: Default padding */
+    padding: 25px;
     text-align: center;
     margin-bottom: 15px;
     position: relative;
     z-index: 10;
 }
 
-/* MODIFIED: Smaller titles */
 .main-title { font-size: 1.8em; color: var(--primary-color); margin-bottom: 15px; }
 .main-title .fa-brain { margin-right: 10px; }
 h2 { font-size: 1.3em; margin-top: 0; margin-bottom: 15px; }
@@ -65,7 +68,6 @@ button { font-family: 'Be Vietnam Pro', sans-serif; font-size: 16px; padding: 12
 .main-action-btn { background: var(--primary-color); color: white; width: 100%; }
 .main-action-btn:hover { background: #0b5ed7; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(13, 110, 253, 0.4); }
 
-/* NEW: Secondary button style for "back to input" */
 .secondary-action-btn {
     background-color: #6c757d;
     color: white;
@@ -117,7 +119,7 @@ button { font-family: 'Be Vietnam Pro', sans-serif; font-size: 16px; padding: 12
 #check-write-btn, #check-fill-btn { background-color: var(--success-color); color: white; margin-top: 15px; }
 
 
-/* MODIFIED: Flashcard Game Styles */
+/* Flashcard Game Styles */
 #flashcard-container { display: flex; flex-direction: column; align-items: center; gap: 15px; }
 .flashcard { background-color: transparent; width: 100%; max-width: 400px; height: 220px; perspective: 1000px; cursor: pointer; }
 .flashcard-inner { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.6s; transform-style: preserve-3d; box-shadow: var(--shadow); border-radius: 16px; }
@@ -131,7 +133,6 @@ button { font-family: 'Be Vietnam Pro', sans-serif; font-size: 16px; padding: 12
     display: flex;
     align-items: center;
     justify-content: center;
-    /* MODIFIED: Responsive font size */
     font-size: clamp(1.5em, 6vw, 2.2em);
     font-weight: 700;
     padding: 20px;
@@ -140,7 +141,6 @@ button { font-family: 'Be Vietnam Pro', sans-serif; font-size: 16px; padding: 12
     word-break: break-word;
 }
 .flashcard-front {
-    /* MODIFIED: Added background color */
     background: linear-gradient(135deg, #e3f2fd, #bbdefb);
     color: var(--primary-color);
 }
@@ -165,26 +165,24 @@ button { font-family: 'Be Vietnam Pro', sans-serif; font-size: 16px; padding: 12
 
 #back-to-menu-btn { margin-top: 20px; background-color: var(--accent-color); color: white; }
 
-/* Character Styles */
-#character-container {
-    position: fixed;
-    bottom: -10px;
-    right: 5px;
-    width: clamp(100px, 15vw, 150px);
-    height: auto;
-    z-index: 1; 
-    pointer-events: none;
+/* REMOVED: All character styles are gone */
+
+/* MODIFIED: Footer styles */
+footer {
+    width: 100%;
+    text-align: center;
+    padding: 8px 0; /* A little bit of vertical padding */
+    font-size: 14px;
+    color: #888;
+    position: relative;
+    z-index: 10;
 }
-#character-img { width: 100%; height: 100%; object-fit: contain; }
-.happy-animation { animation: happy-bounce 0.6s ease; }
-.sad-animation { animation: sad-shake 0.5s ease; }
-@keyframes happy-bounce { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-20px) scale(1.1); } }
-@keyframes sad-shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px) rotate(-8deg); } 75% { transform: translateX(8px) rotate(8deg); } }
+/* This is the key change to make the footer smaller */
+footer p {
+    margin: 0;
+}
 
-/* MODIFIED: Smaller footer */
-footer { width: 100%; text-align: center; padding: 5px 0; font-size: 14px; color: #888; position: relative; z-index: 10; }
-
-/* NEW: Media query for mobile responsiveness */
+/* Media query for mobile responsiveness */
 @media (max-width: 600px) {
     body { padding: 5px; }
     .container { padding: 15px; }

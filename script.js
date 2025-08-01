@@ -19,13 +19,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const statsIncorrect = document.getElementById('stats-incorrect').parentElement;
     const statsProgress = document.getElementById('stats-progress');
     const statsAccuracy = document.getElementById('stats-accuracy').parentElement;
+    // NEW: Get the new button
+    const backToInputBtn = document.getElementById('back-to-input-btn');
 
     // === GAME STATE & CONFIG ===
     let wordList = [];
     let currentQuestionIndex = 0;
     let correctCount = 0;
     let incorrectCount = 0;
-    // NEW: Added flashcard key for consistency
     let incorrectAnswers = { flashcard: [], mc: [], write: [], fill: [], match: [] };
     let completedGames = new Set();
     let isProcessing = false;
@@ -87,9 +88,14 @@ document.addEventListener('DOMContentLoaded', () => {
         unlockAudioContext();
         createGame();
     });
+    
+    // NEW: Listener for the back to input button
+    backToInputBtn.addEventListener('click', () => {
+        gameSelection.classList.add('hidden');
+        inputSection.classList.remove('hidden');
+    });
 
     fileUpload.addEventListener('change', handleFileUpload);
-    // NEW: Added Flashcard game button listener
     document.getElementById('flashcard-game-btn').addEventListener('click', () => startGame('flashcard'));
     document.getElementById('mc-game-btn').addEventListener('click', () => startGame('mc'));
     document.getElementById('match-game-btn').addEventListener('click', () => startGame('match'));
@@ -115,9 +121,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
         if (wordList.length < 1) { alert('Cần ít nhất 1 từ để tạo game!'); return; }
-        if (wordList.length < 4 && document.getElementById('mc-game-btn')) {
-             // Disable games requiring more words
-        }
         saveToLocalStorage();
         inputSection.classList.add('hidden');
         finalStatsContainer.classList.add('hidden');
@@ -131,15 +134,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         gameSelection.classList.add('hidden');
         gameContainer.classList.remove('hidden');
-        backToMenuBtn.classList.remove('hidden'); // MODIFIED: Show back button immediately
+        backToMenuBtn.classList.remove('hidden');
         gameArea.innerHTML = '';
         currentQuestionIndex = 0;
         correctCount = 0;
         incorrectCount = 0;
         isProcessing = false;
         incorrectAnswers[gameType] = [];
-        updateStatsBar();
-        wordList.sort(() => Math.random() - 0.5);
+        // No random sort for flashcards, learn in order
+        if (gameType !== 'flashcard') {
+            wordList.sort(() => Math.random() - 0.5);
+        }
         
         const gameFunctions = {
             'flashcard': { title: "Game Flashcards", start: startFlashcardGame },
@@ -149,6 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
             'fill': { title: "Game Điền Từ", start: startFillGame }
         };
         gameTitle.innerText = gameFunctions[gameType].title;
+        updateStatsBar(); // Update stats bar before starting
         gameFunctions[gameType].start();
     }
     
@@ -157,7 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
         gameSelection.classList.remove('hidden');
         backToMenuBtn.classList.add('hidden');
         setCharacterState('idle');
-        if (completedGames.size === 4) showFinalStats(); // This might need adjustment if flashcards are counted
+        // Final stats logic might need adjustment if more games are added
     }
 
     // === UI & STATE HANDLERS ===
@@ -192,14 +198,13 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateStatsBar() {
         const isFlashcard = gameTitle.innerText.includes("Flashcards");
         
-        // Show/hide stats based on game type
         statsCorrect.style.display = isFlashcard ? 'none' : 'block';
         statsIncorrect.style.display = isFlashcard ? 'none' : 'block';
         statsAccuracy.style.display = isFlashcard ? 'none' : 'block';
         
         if (isFlashcard) {
             statsProgress.parentElement.querySelector('.stat-label').textContent = 'Thẻ';
-            statsProgress.textContent = `${currentQuestionIndex + 1}/${wordList.length}`;
+            statsProgress.textContent = wordList.length > 0 ? `${currentQuestionIndex + 1}/${wordList.length}`: '0/0';
         } else {
             statsProgress.parentElement.querySelector('.stat-label').textContent = 'Tiến độ';
             const totalItems = wordList.length;
@@ -231,13 +236,17 @@ document.addEventListener('DOMContentLoaded', () => {
         updateStatsBar();
     };
 
-    // === NEW: FLASHCARD GAME LOGIC ===
+    // === FLASHCARD GAME LOGIC ===
     function startFlashcardGame() {
         currentQuestionIndex = 0;
         renderFlashcard(currentQuestionIndex);
     }
     
     function renderFlashcard(index) {
+        if (wordList.length === 0) {
+            gameArea.innerHTML = `<p>Không có từ nào để hiển thị.</p>`;
+            return;
+        }
         const currentWord = wordList[index];
         if (!currentWord) return;
 
@@ -267,8 +276,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const speakBtn = document.getElementById('flashcard-speak');
 
         card.addEventListener('click', () => card.classList.toggle('flipped'));
-        
-        speakBtn.addEventListener('click', () => speak(currentWord.english));
+        speakBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent card from flipping when clicking the speak button
+            speak(currentWord.english);
+        });
 
         prevBtn.disabled = index === 0;
         nextBtn.disabled = index === wordList.length - 1;
@@ -288,7 +299,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // === OTHER GAMES (UNCHANGED LOGIC, BUT INCLUDED FOR COMPLETENESS) ===
+    // === OTHER GAMES LOGIC ===
     function startMultipleChoiceGame() {
         if (currentQuestionIndex >= wordList.length) { endGame('mc'); return; }
         updateStatsBar(); 
@@ -319,11 +330,7 @@ document.addEventListener('DOMContentLoaded', () => {
         currentQuestionIndex++;
 
         setTimeout(() => {
-            try {
-                startMultipleChoiceGame();
-            } finally {
-                isProcessing = false;
-            }
+            try { startMultipleChoiceGame(); } finally { isProcessing = false; }
         }, 1500);
     }
     
@@ -401,11 +408,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         currentQuestionIndex++;
         setTimeout(() => {
-            try {
-                startWritingGame();
-            } finally {
-                isProcessing = false;
-            }
+            try { startWritingGame(); } finally { isProcessing = false; }
         }, 1200);
     }
 
@@ -438,16 +441,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         currentQuestionIndex++;
         setTimeout(() => {
-            try {
-                startFillGame();
-            } finally {
-                isProcessing = false;
-            }
+            try { startFillGame(); } finally { isProcessing = false; }
         }, 1200);
     }
     
     // === END GAME & STATS ===
     function endGame(gameType) {
+        if(gameType === 'flashcard') { // Flashcards don't have an "end game" screen
+             showGameSelection();
+             return;
+        }
         completedGames.add(gameType);
         const randomCongrats = congratsMessages[Math.floor(Math.random() * congratsMessages.length)];
         let resultsHTML = `<p class="end-game-message">${randomCongrats}</p>`;
@@ -469,7 +472,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         gameArea.innerHTML = resultsHTML;
-        // The back to menu button is already visible, so no change here.
     }
     
     function showFinalStats() { 

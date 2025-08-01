@@ -1,1 +1,1 @@
-
+Chương trình Game luyện học từ mới tiếng Anh. Bạn chỉ cần nhập từ mới tiếng Anh muốn học theo đúng định dạng: "từ tiếng Anh - nghĩa tiếng Việt", lần lượt từng dòng. Sau khi xong nháy vào chọn Game để học.
